@@ -1,0 +1,19 @@
+---
+- hosts: ansible_openstack
+  tasks:
+  - name: install ntp
+    apt: pkg=ntp state=installed
+- vars_files:
+  - group_vars/all
+  hosts: "{{ controller_eth1 }}"
+  tasks:
+  - name: change conf
+    lineinfile: dest=/etc/ntp.conf regexp='^restrict -4' line='restrict -4 default kod notrap nomodify'
+  - name: change conf
+    lineinfile: dest=/etc/ntp.conf regexp='^restrict -6' line='restrict -6 default kod notrap nomodify'
+- hosts: ansible_openstack
+  tasks:
+  - name: change conf in all nodes
+    lineinfile: dest=/etc/ntp.conf regexp='^server ntp.ubuntu.com' line='server {{ controller_eth1 }} iburst'
+  - name: Restart ntp
+    service: name=ntp state=restarted

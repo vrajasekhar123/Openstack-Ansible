@@ -1,0 +1,41 @@
+---
+- include: install-ntp.yml
+- include: createrepo.yml 
+- vars_files:
+  - group_vars/all 
+  hosts: "{{ controller_eth1 }}"
+  roles:
+   - { role: roles/ansible_controller/install_mariadb }
+   - { role: roles/ansible_controller/install_rabbitmq }
+   - { role: roles/ansible_controller/install_keystone } 
+   - { role: roles/ansible_controller/install_glance }
+   - { role: roles/ansible_controller/install_nova }
+
+- vars_files:
+  - group_vars/all
+  hosts: "{{ compute_eth1 }}"
+  roles:
+   - { role: roles/ansible_compute/install_nova }
+
+- vars_files:
+  - group_vars/all
+  hosts: "{{ controller_eth1 }}"
+  roles:
+   - { role: roles/ansible_controller/install_neutron }
+- vars_files:
+  - group_vars/all
+  hosts: "{{ compute_eth1 }}"
+  roles:
+   - { role: roles/ansible_compute/install_neutron }
+- vars_files:
+  - group_vars/all
+  hosts: "{{ network_eth1 }}"
+  roles:
+   - { role: roles/ansible_network/install_neutron }
+
+- vars_files:
+  - group_vars/all
+  hosts: "{{ controller_eth1 }}"
+  roles:
+   - { role: roles/ansible_controller/network_setup }
+   - { role: roles/ansible_controller/install_dashboard } 

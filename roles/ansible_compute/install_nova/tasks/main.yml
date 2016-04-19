@@ -1,0 +1,16 @@
+---
+  - name: Install nova-compute sysfsutils on "compute" node
+    apt: name={{ item }} state=present force=yes
+    with_items:
+     - nova-compute
+     - sysfsutils
+  - name: Configure nova.conf
+    template: src=nova.conf.j2 dest=/etc/nova/nova.conf
+  - name: Configure nova-compute.conf
+    template: src=nova-compute.conf.j2 dest=/etc/nova/nova-compute.conf
+##    notify:
+##     - Restart Nova-Compute
+  - name: Restart Nova-Compute
+    service: name=nova-compute state=restarted
+  - name: Remove /var/lib/nova/nova.sqlite
+    file: path=/var/lib/nova/nova.sqlite state=absent

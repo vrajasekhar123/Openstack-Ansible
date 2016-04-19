@@ -1,0 +1,9 @@
+---
+- hosts: ansible_openstack
+  tasks:
+  - name: Install the Ubuntu Cloud archive keyring
+    apt: name=ubuntu-cloud-keyring state=present
+  - name: Create repository cloudarchive-juno.list
+    lineinfile: dest=/etc/apt/sources.list.d/cloudarchive-juno.list line="deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main" create=yes
+  - name: Upgrade the packages
+    apt: update_cache=yes upgrade=dist

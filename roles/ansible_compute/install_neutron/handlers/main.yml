@@ -1,0 +1,5 @@
+---
+- name: Restart Nova-compute
+  service: name=nova-compute state=restarted
+- name: Restart Neutron-plugin-openvswitch-agent
+  service: name=neutron-plugin-openvswitch-agent state=restarted

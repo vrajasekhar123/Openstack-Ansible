@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#Create tenant network
+source /root/demo-openrc.sh
+neutron net-create demo-net
+neutron subnet-create demo-net --name demo-subnet --gateway 192.168.1.1 192.168.1.0/24
+neutron router-create demo-router
+neutron router-interface-add demo-router demo-subnet
+
+
+#generate ssh key before going to lance instace
+echo -e  'y\n'|ssh-keygen -q -t rsa -N "" -f /root/.ssh/id_rsa
+nova keypair-add --pub-key /root/.ssh/id_rsa.pub demo-key
