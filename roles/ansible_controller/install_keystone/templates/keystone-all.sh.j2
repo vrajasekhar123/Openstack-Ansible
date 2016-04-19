@@ -1,0 +1,44 @@
+#!/bin/bash
+export OS_SERVICE_TOKEN='{{ openssl_rand }}'
+export OS_SERVICE_ENDPOINT='{{ admin_token }}'
+
+# required for keystone (identity)
+keystone tenant-create --name admin --description "Admin Tenant"
+keystone user-create --name admin --pass {{ admin_user_pass }} --email "admin@example.com"
+keystone role-create --name admin
+keystone user-role-add --user admin --tenant admin --role admin
+keystone tenant-create --name demo --description "Demo Tenant"
+keystone user-create --name demo --tenant demo --pass {{ admin_user_pass }} --email "demo@example.com"
+keystone tenant-create --name service --description "Service Tenant"
+keystone service-create --name keystone --type identity --description "OpenStack Identity"
+keystone endpoint-create --service-id "$(keystone service-list | awk '/ identity / {print $2}')" --publicurl "http://{{ controller_eth1 }}:5000/v2.0" --internalurl "http://{{ controller_eth1 }}:5000/v2.0" --adminurl "http://{{ controller_eth1 }}:35357/v2.0" --region regionOne
+unset OS_SERVICE_TOKEN
+unset OS_SERVICE_ENDPOINT
+
+# required for glance (image)
+source /root/admin-openrc.sh
+keystone user-create --name glance --pass {{ glance_user_pass }}
+keystone user-role-add --user glance --tenant service --role admin
+keystone service-create --name glance --type image --description "OpenStack Image Service"
+keystone endpoint-create --service-id "$(keystone service-list | awk '/ image / {print $2}')" --publicurl "http://{{ controller_eth1 }}:9292" --internalurl "http://{{ controller_eth1 }}:9292" --adminurl "http://{{ controller_eth1 }}:9292" --region regionOne
+
+# required for nova (compute)
+keystone user-create --name nova --pass {{ nova_user_pass }}
+keystone user-role-add --user nova --tenant service --role admin
+keystone service-create --name nova --type compute --description "OpenStack Compute"
+keystone endpoint-create --service-id "$(keystone service-list | awk '/ compute / {print $2}')" --publicurl http://{{ controller_eth1 }}:8774/v2/%\(tenant_id\)s --internalurl http://{{ controller_eth1 }}:8774/v2/%\(tenant_id\)s --adminurl http://{{ controller_eth1 }}:8774/v2/%\(tenant_id\)s --region regionOne
+
+# required for neutron (network)
+keystone user-create --name neutron --pass {{ neutron_user_pass }}
+keystone user-role-add --user neutron --tenant service --role admin
+keystone service-create --name neutron --type network --description "OpenStack Networking"
+keystone endpoint-create --service-id "$(keystone service-list | awk '/ network / {print $2}')" --publicurl "http://{{ controller_eth1 }}:9696" --adminurl "http://{{ controller_eth1 }}:9696" --internalurl "http://{{ controller_eth1 }}:9696" --region regionOne
+
+# required for cinder (block storage)
+keystone user-create --name cinder --pass {{ cinder_user_pass }}
+keystone user-role-add --user cinder --tenant service --role admin
+keystone service-create --name cinder --type volume --description "OpenStack Block Storage"
+keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage"
+keystone endpoint-create --service-id "$(keystone service-list | awk '/ volume / {print $2}')" --publicurl http://{{ controller_eth1 }}:8776/v1/%\(tenant_id\)s --internalurl http://{{ controller_eth1 }}:8776/v1/%\(tenant_id\)s --adminurl http://{{ controller_eth1 }}:8776/v1/%\(tenant_id\)s --region regionOne
+keystone endpoint-create --service-id "$(keystone service-list | awk '/ volumev2 / {print $2}')" --publicurl http://{{ controller_eth1 }}:8776/v2/%\(tenant_id\)s --internalurl http://{{ controller_eth1 }}:8776/v2/%\(tenant_id\)s --adminurl http://{{ controller_eth1 }}:8776/v2/%\(tenant_id\)s --region regionOne
+

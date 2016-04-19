@@ -1,0 +1,40 @@
+---
+  - name: Create database for glance
+    mysql_db: login_user=root login_password={{ mysql_root_password  }} name=glance state=present
+  - name: Create glance user and grant privileges to glance database.
+    mysql_user: login_user=root login_password={{ mysql_root_password  }} name=glance password={{ glance_dbpass }} priv=*.*:ALL state=present host={{ item }}
+    with_items:
+     - "{{ controller_eth1 }}"
+     - 127.0.0.1
+     - localhost
+     - ::1
+  - name: Install glance and python-glanceclient on controller node
+    apt: name={{ item }} state=present force=yes
+    with_items:
+     - glance
+     - python-glanceclient
+  - name: Configure glance-api.conf 
+    template: src=glance-api.conf.j2 dest=/etc/glance/glance-api.conf
+  - name: Configure glance-registry.conf 
+    template: src=glance-registry.conf.j2 dest=/etc/glance/glance-registry.conf
+  - name: Populate the Image service database in controller node
+    shell: su -s /bin/sh -c "glance-manage db_sync" glance
+    notify:
+     - Restart Glance-Registry
+     - Restart Glance-Api
+##  - name: Restart Glance-Registry
+##    service: name=glance-registry state=restarted
+##  - name: Restart Glance-Api
+##    service: name=glance-api state=restarted
+  - name: Remove /var/lib/glance/glance.sqlite
+    file: path=/var/lib/glance/glance.sqlite state=absent
+  - name: Upload image
+    glance_image:
+      login_username=admin
+      login_password={{ admin_user_pass }}
+      login_tenant_name=admin
+      name="cirros-0.3.3-x86_64"
+      container_format=bare
+      disk_format=qcow2
+      state=present
+      copy_from=http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img

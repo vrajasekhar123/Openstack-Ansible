@@ -1,0 +1,42 @@
+---
+  - name: Create database for neutron
+    mysql_db: login_user=root login_password={{ mysql_root_password  }} name=neutron state=present
+  - name: Create neutron user and grant privileges to neutron database.
+    mysql_user: login_user=root login_password={{ mysql_root_password  }} name=neutron password={{ glance_dbpass }} priv=*.*:ALL state=present host={{ item }}
+    with_items:
+     - "{{ controller_eth1 }}"
+     - 127.0.0.1
+     - localhost
+     - ::1
+  - name: Install neutron-server neutron-plugin-ml2 python-neutronclient on controller node
+    apt: name={{ item }} state=present force=yes
+    with_items:
+     - neutron-server
+     - neutron-plugin-ml2
+     - python-neutronclient
+  - name: grep service tenant id
+    template: src=service-tenant-id.sh.j2 dest=/var/tmp/service-tenant-id.sh
+  - command: bash /var/tmp/service-tenant-id.sh
+  - fetch: src=/var/tmp/service-tenant-get.txt dest=/var/tmp/service-tenant-get.txt flat=yes
+  - name: Configure neutron.conf 
+    template: src=neutron.conf.j2 dest=/etc/neutron/neutron.conf
+  - lineinfile: dest=/etc/neutron/neutron.conf regexp="^nova_admin_tenant_id" line=nova_admin_tenant_id={{ lookup('file', '/var/tmp/service-tenant-get.txt') }}
+  - name: Configure ml2_conf.ini
+    template: src=ml2_conf.ini.j2 dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+  - name: Populate the Network service database in controller node
+    shell: su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade juno" neutron
+##    notify:
+##     - Restart Nova-Api
+##     - Restart Nova-Scheduler
+##     - Restart Nova-Conductor
+##     - Restart Neutron-Server
+  - name: Restart Nova-Api
+    service: name=nova-api state=restarted
+  - name: Restart Nova-Scheduler
+    service: name=nova-scheduler state=restarted
+  - name: Restart Nova-Conductor
+    service: name=nova-conductor state=restarted
+  - name: Restart Neutron-Server
+    service: name=neutron-server state=restarted
+  - name: Remove /var/lib/neutron/neutron.sqlite
+    file: path=/var/lib/neutron/neutron.sqlite state=absent

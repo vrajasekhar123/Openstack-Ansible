@@ -1,0 +1,3 @@
+#!/bin/bash
+source /root/admin-openrc.sh
+keystone tenant-get service | grep id | awk '{print $4}' > /var/tmp/service-tenant-get.txt

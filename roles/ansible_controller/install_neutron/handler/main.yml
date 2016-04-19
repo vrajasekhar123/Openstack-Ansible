@@ -1,0 +1,9 @@
+---
+- name: Restart Nova-Api
+  service: name=nova-npi state=restarted
+- name: Restart Nova-Scheduler
+  service: name=nova-scheduler state=restarted
+- name: Restart Nova-Conductor
+  service: name=nova-conductor state=restarted
+- name: Restart Neutron-Server
+  service: name=neutron-Server state=restarted

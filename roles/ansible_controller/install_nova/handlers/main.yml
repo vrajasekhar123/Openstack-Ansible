@@ -1,0 +1,14 @@
+---
+- name: Restart Nova-Api
+  service: name=nova-api state=restarted
+- name: Restart Nova-Cert
+  service: name=nova-cert state=restarted
+- name: Restart Nova-Consoleauth
+  service: name=nova-consoleauth state=restarted
+- name: Restart Nova-Scheduler
+  service: name=nova-scheduler state=restarted
+- name: Restart Nova-Conductor
+  service: name=nova-conductor state=restarted
+- name: Restart Nova-Novncproxy
+  service: name=nova-novncproxy state=restarted
+

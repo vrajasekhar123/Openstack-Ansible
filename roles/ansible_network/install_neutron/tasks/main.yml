@@ -1,0 +1,41 @@
+---
+  - name: Update sysctl
+    lineinfile: dest=/etc/sysctl.conf line=net.ipv4.ip_forward=1
+  - lineinfile: dest=/etc/sysctl.conf line=net.ipv4.conf.all.rp_filter=0
+  - lineinfile: dest=/etc/sysctl.conf line=net.ipv4.conf.default.rp_filter=0
+  - command: sysctl -p
+  - name: Install neutron-plugin-ml2 neutron-plugin-openvswitch-agent neutron-l3-agent neutron-dhcp-agent on network node
+    apt: name={{ item }} state=present force=yes
+    with_items:
+     - neutron-plugin-ml2
+     - neutron-plugin-openvswitch-agent
+     - neutron-l3-agent
+     - neutron-dhcp-agent
+  - name: Configure neutron.conf 
+    template: src=neutron.conf.j2 dest=/etc/neutron/neutron.conf
+  - name: Configure ml2_conf.ini
+    template: src=ml2_conf.ini.j2 dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+  - name: Configure l3_agent.ini 
+    template: src=l3_agent.ini.j2 dest=/etc/neutron/l3_agent.ini
+  - name: Configure dhcp_agent.ini
+    template: src=dhcp_agent.ini.j2 dest=/etc/neutron/dhcp_agent.ini
+  - name: Configure metadata_agent.ini
+    template: src=metadata_agent.ini.j2 dest=/etc/neutron/metadata_agent.ini
+##    notify:
+##     - Restart Neutron-plugin-openvswitch-agent
+##     - Restart Neutron-l3-agent
+##     - Restart Neutron-dhcp-agent
+##     - Restart Neutron-metadata-agent
+  - name: Restart Neutron-plugin-openvswitch-agent
+    service: name=neutron-plugin-openvswitch-agent state=restarted
+  - name: Restart Neutron-l3-agent
+    service: name=neutron-l3-agent state=restarted
+  - name: Restart Neutron-dhcp-agent
+    service: name=neutron-dhcp-agent state=restarted
+  - name: Restart Neutron-metadata-agent
+    service: name=neutron-metadata-agent state=restarted
+  - name: Create externat bridge
+    command: ovs-vsctl add-br br-ex
+  - name: Add port to external bridge
+    command: ovs-vsctl add-port br-ex eth3
+  - command: ethtool -K eth3 gro off

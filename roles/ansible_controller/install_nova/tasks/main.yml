@@ -1,0 +1,45 @@
+---
+  - name: Create database for nova
+    mysql_db: login_user=root login_password={{ mysql_root_password  }} name=nova state=present
+  - name: Create nova user and grant privileges to nova database.
+    mysql_user: login_user=root login_password={{ mysql_root_password  }} name=nova password={{ nova_dbpass }} priv=*.*:ALL state=present host={{ item }}
+    with_items:
+     - "{{ controller_eth1 }}"
+     - 127.0.0.1
+     - localhost
+     - ::1
+  - name: Install nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler python-novaclient on "controller" node
+    apt: name={{ item }} state=present force=yes
+    with_items:
+     - nova-api
+     - nova-cert
+     - nova-conductor
+     - nova-consoleauth
+     - nova-novncproxy
+     - nova-scheduler
+     - python-novaclient
+  - name: Configure nova.conf
+    template: src=nova.conf.j2 dest=/etc/nova/nova.conf
+  - name: Populate the Compute service database in controller node
+    shell: su -s /bin/sh -c "nova-manage db sync" nova
+##    notify:
+##     - Restart Nova-Api
+##     - Restart Nova-Cert
+##     - Restart Nova-Consoleauth
+##     - Restart Nova-Scheduler
+##     - Restart Nova-Conductor
+##     - Restart Nova-Novncproxy
+  - name: Restart Nova-Api
+    service: name=nova-api state=restarted
+  - name: Restart Nova-Cert
+    service: name=nova-cert state=restarted
+  - name: Restart Nova-Consoleauth
+    service: name=nova-consoleauth state=restarted
+  - name: Restart Nova-Scheduler
+    service: name=nova-scheduler state=restarted
+  - name: Restart Nova-Conductor
+    service: name=nova-conductor state=restarted
+  - name: Restart Nova-Novncproxy
+    service: name=nova-novncproxy state=restarted
+  - name: Remove /var/lib/nova/nova.sqlite
+    file: path=/var/lib/nova/nova.sqlite state=absent

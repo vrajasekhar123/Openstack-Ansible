@@ -1,0 +1,22 @@
+---
+  - name: Update sysctl
+    lineinfile: dest=/etc/sysctl.conf line=net.ipv4.conf.all.rp_filter=0
+  - lineinfile: dest=/etc/sysctl.conf line=net.ipv4.conf.default.rp_filter=0
+  - command: sysctl -p
+  - name: Install neutron-plugin-ml2 neutron-plugin-openvswitch-agent on compute node
+    apt: name={{ item }} state=present force=yes
+    with_items:
+     - neutron-plugin-ml2
+     - neutron-plugin-openvswitch-agent
+  - name: Configure neutron.conf 
+    template: src=neutron.conf.j2 dest=/etc/neutron/neutron.conf
+  - name: Configure ml2_conf.ini
+    template: src=ml2_conf.ini.j2 dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+##    notify:
+##     - Restart Nova-compute
+##     - Restart Neutron-plugin-openvswitch-agent
+  - name: Restart Nova-compute
+    service: name=nova-compute state=restarted
+  - name: Restart Neutron-plugin-openvswitch-agent
+    service: name=neutron-plugin-openvswitch-agent state=restarted
+
