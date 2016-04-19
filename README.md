@@ -1,7 +1,7 @@
 # openstack-ansible
-OpenStack Installation with Ansible
+# OpenStack Installation with Ansible
 
-Prerequisites:-
+# Prerequisites:-
 
 1. One node with Ansible installed. (You can use ansible in any one of openstack nodes or in separate node)
 2. 3 nodes with below configurations.
@@ -14,7 +14,7 @@ Prerequisites:-
 
 3. All 3 VMs should communicate with each other and with ansible node.
 
-How to use :-
+# How to use :-
 
 1. Copy the attached to your ansible node and untar the same.
 2. Here you have to edit the 2 basic files.
