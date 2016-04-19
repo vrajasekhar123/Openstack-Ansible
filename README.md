@@ -17,5 +17,6 @@ How to use :-
     i. inventory/hosts :- Host file to ansible
     ii. group_vars/all:- Var file to define IPs, user names and passwords.
 3. And you can simple install the OpenStack with single command from openstack_main.yml file location.
+
     command:
                     ansible-playbook -i inventory/ openstack_main.yml
