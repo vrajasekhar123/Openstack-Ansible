@@ -1,5 +1,5 @@
 # openstack-ansible
-# OpenStack Installation with Ansible (Non-official)
+# OpenStack basic installation with Ansible (Non-official)
 
 # Prerequisites:-
 
