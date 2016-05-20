@@ -1,29 +1,38 @@
-# openstack-ansible
-# OpenStack basic installation with Ansible (Non-official)
+Role Name
+=========
 
-# Prerequisites:-
+A brief description of the role goes here.
 
-1. One node with Ansible installed. (You can use ansible in any one of openstack nodes or in separate node)
-2. 3 nodes with below configurations.
+Requirements
+------------
 
-       i. VM1(Controller) - Hard disk 50GB, RAM 1 GB, 1 CPU, Interfaces 2 ( 1 NAT, 1 Host only adapter vboxnet0 )
-       
-       ii. VM2(Compute) - Hard disk 50GB, RAM 2 GB, 2 CPU, Interfaces 3 (1 NAT, 2 Host only adapter vboxnet0 )
-       
-       iii. VM3(Network) - Hard disk 50GB, RAM 2 GB, 1 CPU, Interfaces 4 (1 NAT, 3 Host only adapter vboxnet0 )
+Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
 
-3. All 3 VMs should communicate with each other and with ansible node.
+Role Variables
+--------------
 
-# How to use :-
+A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 
-1. Copy the attached to your ansible node and untar the same.
-2. Here you have to edit the 2 basic files.
-    i. inventory/hosts :- Host file to ansible
-    ii. group_vars/all:- Var file to define IPs, user names and passwords.
-3. And you can simple install the OpenStack with single command from openstack_main.yml file location.
+Dependencies
+------------
 
-    command:
-    
-    ansible-playbook -i inventory/ openstack_main.yml
+A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
+Example Playbook
+----------------
 
+Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+
+    - hosts: servers
+      roles:
+         - { role: username.rolename, x: 42 }
+
+License
+-------
+
+BSD
+
+Author Information
+------------------
+
+An optional section for the role authors to include contact information, or a website (HTML is not allowed).
